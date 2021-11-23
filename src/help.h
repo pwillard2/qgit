@@ -359,7 +359,7 @@ static const char* helpInfo =
 "<p>External diff tool shows the diffs between two files.\n"
 "First file is the current selected file of current revision.\n"
 "Second file is the same file of the parent revision or of a specific revision\n"
-"if <em>diff to sha</em> feature is enabled (diff target is highlighted, see above).</p>\n"
+"if <em>diff to sha</em> feature is enabled (diff target is highlighted with CTRL+right click, see above).</p>\n"
 "<p>Default external viewer is kompare, but it is possible to set a preferred one\n"
 "from <em>Edit&#8594;Settings&#8594;External Diff Tool</em>.</p>\n"
 "<hr>\n"

@@ -295,7 +295,7 @@ as example to view the diffs in a two vertical tiled windows.
 External diff tool shows the diffs between two files.
 First file is the current selected file of current revision.
 Second file is the same file of the parent revision or of a specific revision
-if 'diff to sha' feature is enabled (diff target is highlighted, see above).
+if 'diff to sha' feature is enabled (diff target is highlighted with CTRL+right click, see above).
 
 Default external viewer is kompare, but it is possible to set a preferred one
 from 'Edit->Settings->External Diff Tool'.
