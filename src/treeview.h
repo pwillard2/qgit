@@ -67,6 +67,9 @@ protected slots:
 	void on_itemExpanded(QTreeWidgetItem*);
 	void on_itemCollapsed(QTreeWidgetItem*);
 
+protected:
+	virtual void mouseMoveEvent(QMouseEvent*);
+    	bool startDragging(QMouseEvent *e);
 private:
 	void setTree(SCRef treeSha);
 	void setFile(SCRef fileName);

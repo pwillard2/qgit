@@ -7,7 +7,13 @@
 
 */
 #include <QApplication>
+#include <QDrag>
+#include <QList>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QTreeWidgetItemIterator>
+#include <QUrl>
 #include "git.h"
 #include "domain.h"
 #include "mainimpl.h"
@@ -290,4 +296,54 @@ void TreeView::restoreStuff() {
 
 	ignoreCurrentChanged = false;
 	QApplication::restoreOverrideCursor();
+}
+
+void TreeView::mouseMoveEvent(QMouseEvent* e) {
+    if (e->buttons() == Qt::LeftButton)
+        if (startDragging(e))
+            return;
+
+    QTreeWidget::mouseMoveEvent(e);
+}
+
+bool TreeView::startDragging(QMouseEvent* /*e*/) {
+
+    FileItem* item = static_cast<FileItem*>(currentItem());
+    if (item == nullptr)
+        return false;
+    if (dynamic_cast<DirItem*>(item))
+        return false;
+
+    const QString& currName = item->fullName();
+    if (currName.isEmpty())
+        return false;
+
+    const QString dragFileName = d->m()->currentDir() + "/" + currName;
+    const QString urlFileName = "file://" + dragFileName;
+    QList<QUrl> urls;
+    urls.append(QUrl(urlFileName));
+    QMimeData* mimeData = new QMimeData;
+    mimeData->setUrls(urls);
+
+    QDrag *drag = new QDrag(this);
+    drag->setMimeData(mimeData);
+
+    // attach some nice pixmap to the drag (to know what is dragged)
+    int spacing = 4;
+    QFont f;
+    QFontMetrics fm(f);
+    QSize size = fm.boundingRect(dragFileName).size() + QSize(2*spacing, 2);
+
+    QPixmap pixmap(size);
+    QPainter painter;
+    painter.begin(&pixmap);
+    painter.setBrush(QPalette().color(QPalette::Window));
+    painter.drawRect(0,0, size.width()-1, size.height()-1);
+    painter.drawText(spacing, fm.ascent()+1, dragFileName);
+    painter.end();
+    drag->setPixmap(pixmap);
+
+    // exec blocks until dragging is finished
+    drag->exec(Qt::CopyAction, Qt::CopyAction);
+    return true;
 }
