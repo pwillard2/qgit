@@ -120,13 +120,22 @@ const QString TreeView::fullName(QTreeWidgetItem* item) {
 	return (item ? f->fullName() : "");
 }
 
-void TreeView::getTreeSelectedItems(QStringList& selectedItems) {
+void TreeView::getTreeSelectedItems(QStringList& selectedItems, bool skipDir) {
 
 	selectedItems.clear();
 	QList<QTreeWidgetItem*> ls = QTreeWidget::selectedItems();
 	FOREACH (QList<QTreeWidgetItem*>, it, ls) {
 		FileItem* f = static_cast<FileItem*>(*it);
-		selectedItems.append(f->fullName());
+                if (f) {
+                    const QString& currName = f->fullName();
+                    if (currName.isEmpty())
+                        continue;
+                    if (skipDir) {
+                        if (dynamic_cast<DirItem*>(f))
+                            continue;
+                    }
+                    selectedItems.append(currName);
+                }
 	}
 }
 
@@ -308,25 +317,25 @@ void TreeView::mouseMoveEvent(QMouseEvent* e) {
 
 bool TreeView::startDragging(QMouseEvent* /*e*/) {
 
-    FileItem* item = static_cast<FileItem*>(currentItem());
-    if (item == nullptr)
-        return false;
-    if (dynamic_cast<DirItem*>(item))
-        return false;
-
-    const QString& currName = item->fullName();
-    if (currName.isEmpty())
+    QStringList selectedItems;
+    getTreeSelectedItems(selectedItems, true);
+    if (selectedItems.count() == 0)
         return false;
 
-    const QString dragFileName = d->m()->currentDir() + "/" + currName;
-    const QString urlFileName = "file://" + dragFileName;
     QList<QUrl> urls;
-    urls.append(QUrl(urlFileName));
+
+    for (const auto& currName : selectedItems) {
+        const QString fullFileName = d->m()->currentDir() + "/" + currName;
+        const QString urlFileName = "file://" + fullFileName;
+        urls.append(QUrl(urlFileName));
+    }
+
     QMimeData* mimeData = new QMimeData;
     mimeData->setUrls(urls);
 
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
+    const QString dragFileName = selectedItems.join(" ");
 
     // attach some nice pixmap to the drag (to know what is dragged)
     int spacing = 4;

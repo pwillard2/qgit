@@ -50,7 +50,7 @@ public:
 	bool isDir(SCRef fileName);
 	bool isModified(SCRef path, bool isDir = false);
 	void clear();
-	void getTreeSelectedItems(QStringList& selectedItems);
+	void getTreeSelectedItems(QStringList& selectedItems, bool skipDir = false);
 	bool getTree(SCRef tSha, Git::TreeInfo& ti, bool wd, SCRef tPath);
 
 	const QPixmap* folderClosed;
