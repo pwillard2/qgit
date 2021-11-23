@@ -21,7 +21,7 @@ using namespace QGit;
 
 FileHistory::FileHistory(QObject* p, Git* g) : QAbstractItemModel(p), git(g) {
 
-  headerInfo << "Graph" << "Id" << "Short Log" << "Commit" << "Author" << "Author Date";
+  headerInfo << "Graph" << "Id" << "Short Log" << "Commit" << "Author" << "Author Date" << "Committer" << "Commit Date";
   lns = new Lanes();
   revs.reserve(QGit::MAX_DICT_SIZE);
   clear(); // after _headerInfo is set
@@ -268,12 +268,22 @@ QVariant FileHistory::data(const QModelIndex& index, int role) const {
   if (col == QGit::AUTH_COL)
     return r->author();
 
+  if (col == QGit::COMMITTER_COL)
+      return r->committer();
+
   if (col == QGit::TIME_COL && r->sha() != QGit::ZERO_SHA_RAW) {
 
     if (secs != 0) // secs is 0 for absolute date
       return timeDiff(secs - r->authorDate().toULong());
     else
       return git->getLocalDate(r->authorDate());
+  }
+  if (col == QGit::COMMIT_TIME_COL && r->sha() != QGit::ZERO_SHA_RAW) {
+
+    if (secs != 0) // secs is 0 for absolute date
+      return timeDiff(secs - r->commitDate().toULong());
+    else
+      return git->getLocalDate(r->commitDate());
   }
   return no_value;
 }

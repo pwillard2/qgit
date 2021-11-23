@@ -107,7 +107,9 @@ void ListView::setupGeometry() {
 	hv->resizeSection(LOG_COL, DEF_LOG_COL_WIDTH);
 	hv->resizeSection(HASH_COL, DEF_HASH_COL_WIDTH);
 	hv->resizeSection(AUTH_COL, DEF_AUTH_COL_WIDTH);
+        hv->resizeSection(COMMITTER_COL, DEF_AUTH_COL_WIDTH); // same
 	hv->resizeSection(TIME_COL, DEF_TIME_COL_WIDTH);
+        hv->resizeSection(COMMIT_TIME_COL, DEF_TIME_COL_WIDTH); // same
 
 	if (git->isMainHistory(fh))
 		hideColumn(ANN_ID_COL);
@@ -1245,6 +1247,8 @@ bool ListViewProxy::isMatch(SCRef sha) const {
 		target = r->longLog();
 	else if (colNum == COMMIT_COL)
 		target = sha;
+        else if (colNum == COMMITTER_COL)
+		target = r->committer();
 
 	// wildcard search, case insensitive
 	return (target.contains(filter));

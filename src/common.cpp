@@ -166,6 +166,15 @@ int Rev::indexData(bool quick, bool withDiff) const {
         dbs("ASSERT in indexData: unexpected end of data");
         return -1;
     }
+
+    // committer date in Unix format (seconds since epoch)
+    comDateStart = ++idx;
+    idx = ba.indexOf('\n', idx); // committer date end without '\n'
+    if (idx == -1) {
+        dbs("ASSERT in indexData: unexpected end of data");
+        return -1;
+    }
+
     // if no error, point to trailing \n
     ++idx;
 

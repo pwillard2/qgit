@@ -139,12 +139,14 @@ namespace QGit {
 		HASH_COL    = 3,
 		AUTH_COL    = 4,
 		TIME_COL    = 5,
+		COMMITTER_COL   = 6,
+		COMMIT_TIME_COL = 7,
 		COMMIT_COL  = 97, // dummy col used for sha searching
 		LOG_MSG_COL = 98, // dummy col used for log messages searching
 		SHA_MAP_COL = 99  // dummy col used when filter output is a set of matching sha
 	};
 
-	inline bool isInfoCol(int x) { return (x == TIME_COL || x == LOG_COL || x == AUTH_COL); }
+	inline bool isInfoCol(int x) { return (x == TIME_COL || x == LOG_COL || x == AUTH_COL || x == COMMITTER_COL || x == COMMIT_TIME_COL); }
 
 	// default list view widths
 	const int DEF_GRAPH_COL_WIDTH = 80;
@@ -320,6 +322,7 @@ public:
 	const QString committer() const { setup(); return mid(comStart, autStart - comStart - 1); }
 	const QString author() const { setup(); return mid(autStart, autDateStart - autStart - 1); }
 	const QString authorDate() const { setup(); return mid(autDateStart, 10); }
+	const QString commitDate() const { setup(); return mid(comDateStart, 10); }
 	const QString shortLog() const { setup(); return mid(sLogStart, sLogLen); }
 	const QString longLog() const { setup(); return mid(lLogStart, lLogLen); }
 	const QString diff() const { setup(); return mid(diffStart, diffLen); }
@@ -340,7 +343,7 @@ private:
 
 	const QByteArray& ba; // reference here!
 	const int start;
-	mutable int parentsCnt, shaStart, comStart, autStart, autDateStart;
+    mutable int parentsCnt, shaStart, comStart, autStart, autDateStart, comDateStart;
 	mutable int sLogStart, sLogLen, lLogStart, lLogLen, diffStart, diffLen;
 	mutable bool indexed;
 public:

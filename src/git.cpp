@@ -29,7 +29,7 @@
 
 #define SHOW_MSG(x) QApplication::postEvent(parent(), new MessageEvent(x)); EM_PROCESS_EVENTS_NO_INPUT;
 
-#define GIT_LOG_FORMAT "%m%HX%PX%n%cn<%ce>%n%an<%ae>%n%at%n%s%n"
+#define GIT_LOG_FORMAT "%m%HX%PX%n%cn<%ce>%n%an<%ae>%n%at%n%ct%n%s%n"
 
 // Used on init() for reading parameters once;
 // It's OK to be unique among qgit windows.
@@ -1087,6 +1087,8 @@ const QString Git::getDesc(SCRef sha, QRegExp& shortLogRE, QRegExp& longLogRE,
 
 			ts << formatList(QStringList(qt4and5escaping(c->author())), "Author");
 			ts << formatList(QStringList(getLocalDate(c->authorDate())), " Author date");
+
+			ts << formatList(QStringList(getLocalDate(c->commitDate())), " Commit date");
 
 			if (c->isUnApplied || c->isApplied) {
 
