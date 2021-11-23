@@ -105,6 +105,7 @@ protected slots:
 	void ActViewDiffNewTab_activated();
 	void ActExternalDiff_activated();
 	void ActExternalEditor_activated();
+	void ActCopyClipboard_activated();
 	void ActSplitView_activated();
 	void ActToggleLogsDiff_activated();
 	void ActShowDescHeader_activated();

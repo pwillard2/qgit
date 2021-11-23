@@ -6,6 +6,7 @@
 	Copyright: See COPYING file that comes with this distribution
 
 */
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QEvent>
 #include <QFileDialog>
@@ -388,6 +389,16 @@ QStringList MainImpl::getExternalEditorArgs() {
 	}
 	return args;
 }
+
+// *************************** CopyClipboard ***************************
+
+void MainImpl::ActCopyClipboard_activated() {
+
+    QString fName1(curDir + "/" + rv->st.fileName());
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(fName1, QClipboard::Clipboard);
+}
+
 // ********************** Repository open or changed *************************
 
 void MainImpl::setRepository(SCRef newDir, bool refresh, bool keepSelection,
@@ -535,6 +546,7 @@ void MainImpl::updateContextActions(SCRef newRevSha, SCRef newFileName,
 	ActViewFileNewTab->setEnabled(fileActionsEnabled && firstTab<FileView>());
 	ActExternalDiff->setEnabled(fileActionsEnabled);
 	ActExternalEditor->setEnabled(fileActionsEnabled);
+	ActCopyClipboard->setEnabled(fileActionsEnabled);
 	ActSaveFile->setEnabled(fileActionsEnabled);
 	ActFilterTree->setEnabled(pathActionsEnabled || ActFilterTree->isChecked());
 
@@ -1355,7 +1367,10 @@ void MainImpl::doContexPopup(SCRef sha) {
 	if (isFilePage && ActExternalEditor->isEnabled())
 		contextMenu.addAction(ActExternalEditor);
 
-	if (isRevPage) {
+	if (isFilePage && ActCopyClipboard->isEnabled())
+		contextMenu.addAction(ActCopyClipboard);
+
+        if (isRevPage) {
 		updateRevVariables(sha);
 
 		if (ActCommit->isEnabled() && (sha == ZERO_SHA))
@@ -1441,6 +1456,8 @@ void MainImpl::doFileContexPopup(SCRef fileName, int type) {
 			contextMenu.addAction(ActExternalEditor);
 		if (ActExternalEditor->isEnabled())
 			contextMenu.addAction(ActExternalEditor);
+		if (ActCopyClipboard->isEnabled())
+			contextMenu.addAction(ActCopyClipboard);
 	}
 	contextMenu.exec(QCursor::pos());
 }
