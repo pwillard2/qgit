@@ -120,14 +120,17 @@ void FileHistory::clear(bool complete) {
   if (testFlag(REL_DATE_F)) {
     secs = QDateTime::currentDateTime().toTime_t();
     headerInfo[ColumnType::TIME_COL] = "Last Change";
+    headerInfo[ColumnType::COMMIT_TIME_COL] = "Commit Time";
   } else {
     secs = 0;
     headerInfo[ColumnType::TIME_COL] = "Author Date";
+    headerInfo[ColumnType::COMMIT_TIME_COL] = "Commit Date";
   }
   rowCnt = revOrder.count();
   annIdValid = false;
   endResetModel();
-  emit headerDataChanged(Qt::Horizontal, 0, ColumnType::TIME_COL);
+  constexpr int maxCol = (ColumnType::COMMIT_TIME_COL > ColumnType::TIME_COL)? ColumnType::COMMIT_TIME_COL: ColumnType::TIME_COL;
+  emit headerDataChanged(Qt::Horizontal, 0, maxCol);
 }
 
 void FileHistory::on_newRevsAdded(const FileHistory* fh, const QVector<ShaString>& shaVec) {

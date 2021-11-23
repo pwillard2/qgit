@@ -612,10 +612,18 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Copy full path to clipboard</string>
+    <string>Copy full path</string>
    </property>
   </action>
-  <action name="ActViewRev">
+  <action name="ActCopyHash">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Copy Commit hash</string>
+   </property>
+  </action>
+   <action name="ActViewRev">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1269,6 +1277,22 @@
    </hints>
   </connection>
   <connection>
+    <sender>ActCopyHash</sender>
+   <signal>triggered()</signal>
+   <receiver>MainBase</receiver>
+   <slot>ActCopyHash_activated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+ </connection>
+ <connection>
    <sender>ActDelete</sender>
    <signal>triggered()</signal>
    <receiver>MainBase</receiver>

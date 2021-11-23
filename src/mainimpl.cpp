@@ -399,6 +399,15 @@ void MainImpl::ActCopyClipboard_activated() {
     clipboard->setText(fName1, QClipboard::Clipboard);
 }
 
+// *************************** ActCopyHash ***************************
+
+void MainImpl::ActCopyHash_activated() {
+
+    QString Sha(rv->st.sha());
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(Sha, QClipboard::Clipboard);
+}
+
 // ********************** Repository open or changed *************************
 
 void MainImpl::setRepository(SCRef newDir, bool refresh, bool keepSelection,
@@ -570,6 +579,7 @@ void MainImpl::updateContextActions(SCRef newRevSha, SCRef newFileName,
 	ActDelete->setEnabled(ref_type != 0);
 	ActPush->setEnabled(found && isUnApplied && git->isNothingToCommit());
 	ActPop->setEnabled(found && isApplied && git->isNothingToCommit());
+        ActCopyHash->setEnabled(newRevSha != ZERO_SHA);
 }
 
 // ************************* cross-domain update Actions ***************************
@@ -1389,6 +1399,8 @@ void MainImpl::doContexPopup(SCRef sha) {
 			contextMenu.addAction(ActPush);
 		if (ActPop->isEnabled())
 			contextMenu.addAction(ActPop);
+		if (ActCopyHash->isEnabled())
+			contextMenu.addAction(ActCopyHash);
 
 		contextMenu.addSeparator();
 
