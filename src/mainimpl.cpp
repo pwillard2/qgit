@@ -289,7 +289,7 @@ QString MainImpl::copyFileToDiffIfNeeded(QStringList* filenames, QString sha) {
 	QFileInfo f(rv->st.fileName());
 	QFileInfo fi(f);
 
-	QString fName(curDir + "/" + sha.left(6) + "_" + fi.fileName());
+	QString fName(curDir + "/" + sha.left(git->shortHashLength()) + "_" + fi.fileName());
 
 	QByteArray fileContent;
 	QTextCodec* tc = QTextCodec::codecForLocale();
