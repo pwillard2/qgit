@@ -100,6 +100,9 @@ void FileContent::setup(Domain* dm, Git* g, QListWidget* lw) {
 	connect(vsb, SIGNAL(valueChanged(int)),
 	        this, SLOT(on_listScrollBar_valueChanged(int)));
         vsb->setSingleStep(fontMetrics().lineSpacing());
+
+        if (git->isTextHighlighter())
+            isHtmlSource = true; // default is syntax coloring if possible
 }
 
 void FileContent::on_scrollBar_valueChanged(int value) {

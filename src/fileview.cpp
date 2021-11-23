@@ -30,6 +30,8 @@ FileView::FileView(MainImpl* mi, Git* g) : Domain(mi, g, false) {
 	// Add GNU source-highlight version to tooltip, or add a message that it's not installed.
 	QToolButton* highlight = fileTab->toolButtonHighlightText;
 	highlight->setToolTip(highlight->toolTip().arg(git->textHighlighterVersion()));
+        if (git->isTextHighlighter())
+            highlight->setChecked(true); // default is syntax coloring if possible
 
 	clear(true); // init some stuff
 
