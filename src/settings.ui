@@ -1228,6 +1228,12 @@
    </hints>
   </connection>
   <connection>
+   <sender>lineEditMail</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>settingsBase</receiver>
+   <slot>lineEditMail_textChanged(QString)</slot>
+  </connection>
+  <connection>
    <sender>checkBoxDiffCache</sender>
    <signal>toggled(bool)</signal>
    <receiver>settingsBase</receiver>

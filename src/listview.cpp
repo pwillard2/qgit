@@ -1081,6 +1081,27 @@ void ListViewDelegate::paintLog(QPainter* p, const QStyleOptionViewItem& opt,
 	QItemDelegate::paint(p, newOpt, index);
 }
 
+void ListViewDelegate::paintEmail(QPainter* p, const QStyleOptionViewItem& opt,
+                                  const QModelIndex& index, int column) const {
+	int row = index.row();
+	const Rev* r = revLookup(row);
+	if (!r)
+		return;
+
+        QString emailName = (column == AUTH_COL) ? r->author() : ((column == COMMITTER_COL) ? r->committer() : "");
+
+         // Get Email from settings (only works if settings were done at least once)
+	QSettings settings;
+	const QString Email(settings.value(EMAIL_KEY).toString());
+        const QString EmailTr = Email.trimmed();
+        const QString EmailBrkt = "<" + EmailTr + ">";
+
+        if ((emailName == EmailTr) || emailName.contains(EmailBrkt)) {
+            p->fillRect(opt.rect, QColor(0xff,0xfa,0xcd)); // light yellow
+        }
+        QItemDelegate::paint(p, opt, index);
+}
+
 void ListViewDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
                              const QModelIndex& index) const {
 
@@ -1092,7 +1113,10 @@ void ListViewDelegate::paint(QPainter* p, const QStyleOptionViewItem& opt,
 	if (index.column() == LOG_COL)
 		return paintLog(p, opt, index);
 
-	return QItemDelegate::paint(p, opt, index);
+	if (index.column() == AUTH_COL || index.column() == COMMITTER_COL)
+            return paintEmail(p, opt, index, index.column());
+
+        return QItemDelegate::paint(p, opt, index);
 }
 
 bool ListViewDelegate::changedFiles(SCRef sha) const {

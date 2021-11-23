@@ -183,6 +183,7 @@ const QString QGit::REV_COLS_KEY    = "Rev_List_view/columns";
 const QString QGit::FILE_COLS_KEY   = "File_List_view/columns";
 const QString QGit::CMT_TEMPL_KEY   = "Commit/template_file_path";
 const QString QGit::CMT_ARGS_KEY    = "Commit/args";
+const QString QGit::EMAIL_KEY       = "Email";
 const QString QGit::RANGE_FROM_KEY  = "RangeSelect/from";
 const QString QGit::RANGE_TO_KEY    = "RangeSelect/to";
 const QString QGit::RANGE_OPT_KEY   = "RangeSelect/options";
