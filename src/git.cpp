@@ -748,6 +748,10 @@ MyProcess* Git::getHighlightedFile(SCRef fileSha, QObject* receiver, QString* re
 		return NULL;
 	}
 	QString ext(fileName.section('.', -1, -1, QString::SectionIncludeLeadingSep));
+        if (!ext.startsWith('.')) { // filename with no suffix
+            // use .filename  (eg, ".Makefile" which works with source-highlight for "Makefile"
+            ext = "." + fileName.section('/', -1, -1, QString::SectionDefault);
+        }
 	QString inputFile(workDir + "/qgit_hlght_input" + ext);
 	if (!saveFile(fileSha, fileName, inputFile))
 		return NULL;
