@@ -355,7 +355,21 @@ void MainImpl::getExternalDiffArgs(QStringList* args, QStringList* filenames) {
 
 void MainImpl::ActExternalEditor_activated() {
 
-	const QStringList &args = getExternalEditorArgs();
+	QString filename =  rv->st.fileName();
+	// get filename from TAB_FILE if applicable
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		bool ctabFound = false;
+		int ctab = data.toInt(&ctabFound);
+		if (ctabFound && (ctab == static_cast<int>(TAB_FILE))) {
+			Domain* t;
+			if (currentTabType(&t) == TAB_FILE)
+				filename = t->st.fileName();
+		}
+	}
+
+	const QStringList &args = getExternalEditorArgs(filename);
 	ExternalEditorProc* externalEditor = new ExternalEditorProc(this);
 	externalEditor->setWorkingDirectory(curDir);
 
@@ -367,9 +381,9 @@ void MainImpl::ActExternalEditor_activated() {
 	}
 }
 
-QStringList MainImpl::getExternalEditorArgs() {
+QStringList MainImpl::getExternalEditorArgs(const QString &filename) {
 
-	QString fName1(curDir + "/" + rv->st.fileName());
+	QString fName1(curDir + "/" + filename);
 
 	// get external diff viewer command
 	QSettings settings;
@@ -394,18 +408,38 @@ QStringList MainImpl::getExternalEditorArgs() {
 
 void MainImpl::ActCopyClipboard_activated() {
 
-    QString fName1(curDir + "/" + rv->st.fileName());
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(fName1, QClipboard::Clipboard);
+	QString filename =  rv->st.fileName();
+	// get filename from TAB_FILE if applicable
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		bool ctabFound = false;
+		int ctab = data.toInt(&ctabFound);
+		if (ctabFound && (ctab == static_cast<int>(TAB_FILE))) {
+			Domain* t;
+			if (currentTabType(&t) == TAB_FILE)
+				filename = t->st.fileName();
+		}
+	}
+
+	QString fName1(curDir + "/" + filename);
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setText(fName1, QClipboard::Clipboard);
 }
 
 // *************************** ActCopyHash ***************************
 
 void MainImpl::ActCopyHash_activated() {
 
-    QString Sha(rv->st.sha());
-    QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(Sha, QClipboard::Clipboard);
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		QString Sha = data.toString();
+		if (Sha != "") {
+			QClipboard *clipboard = QApplication::clipboard();
+			clipboard->setText(Sha, QClipboard::Clipboard);
+		}
+	}
 }
 
 // ********************** Repository open or changed *************************
@@ -579,7 +613,7 @@ void MainImpl::updateContextActions(SCRef newRevSha, SCRef newFileName,
 	ActDelete->setEnabled(ref_type != 0);
 	ActPush->setEnabled(found && isUnApplied && git->isNothingToCommit());
 	ActPop->setEnabled(found && isApplied && git->isNothingToCommit());
-        ActCopyHash->setEnabled(newRevSha != ZERO_SHA);
+	ActCopyHash->setEnabled(newRevSha != ZERO_SHA);
 }
 
 // ************************* cross-domain update Actions ***************************
@@ -1362,6 +1396,10 @@ void MainImpl::doContexPopup(SCRef sha) {
 	bool isPatchPage = (tt == TAB_PATCH);
 	bool isFilePage = (tt == TAB_FILE);
 
+	bool ActExternalEditorWasEnabled = ActExternalEditor->isEnabled();
+	bool ActCopyClipboardWasEnabled = ActCopyClipboard->isEnabled();
+	bool ActCopyHashWasEnabled = ActCopyHash->isEnabled();
+
 	if (isFilePage && ActViewRev->isEnabled())
 		contextMenu.addAction(ActViewRev);
 
@@ -1374,13 +1412,30 @@ void MainImpl::doContexPopup(SCRef sha) {
 	if (!isFilePage && ActExternalDiff->isEnabled())
 		contextMenu.addAction(ActExternalDiff);
 
-	if (isFilePage && ActExternalEditor->isEnabled())
+	if (isFilePage) {
+		QVariant ctab;
+		ctab.setValue(tt);
+		ActExternalEditor->setData(ctab);
 		contextMenu.addAction(ActExternalEditor);
-
-	if (isFilePage && ActCopyClipboard->isEnabled())
+		ActExternalEditor->setEnabled(true);
+	}
+	if (isFilePage) {
+		QVariant ctab;
+		ctab.setValue(tt);
+		ActCopyClipboard->setData(ctab);
 		contextMenu.addAction(ActCopyClipboard);
+		ActCopyClipboard->setEnabled(true);
+	}
 
-        if (isRevPage) {
+	if (isFilePage && sha != ZERO_SHA) {
+		QVariant chash;
+		chash.setValue(QString(sha));
+		ActCopyHash->setData(chash);
+		contextMenu.addAction(ActCopyHash);
+		ActCopyHash->setEnabled(true);
+	}
+
+	if (isRevPage) {
 		updateRevVariables(sha);
 
 		if (ActCommit->isEnabled() && (sha == ZERO_SHA))
@@ -1399,8 +1454,13 @@ void MainImpl::doContexPopup(SCRef sha) {
 			contextMenu.addAction(ActPush);
 		if (ActPop->isEnabled())
 			contextMenu.addAction(ActPop);
-		if (ActCopyHash->isEnabled())
+
+		if (ActCopyHash->isEnabled()) {
+			QVariant chash;
+			chash.setValue(QString(sha));
+			ActCopyHash->setData(chash);
 			contextMenu.addAction(ActCopyHash);
+		}
 
 		contextMenu.addSeparator();
 
@@ -1431,6 +1491,18 @@ void MainImpl::doContexPopup(SCRef sha) {
 
 	// remove selected ref name after showing the popup
 	revision_variables.remove(SELECTED_NAME);
+
+	ActExternalEditor->setData(QVariant()); // invalid
+	ActCopyClipboard->setData(QVariant());  // invalid
+	ActCopyHash->setData(QVariant());       // invalid
+
+	// restore previous enable property values
+	if (!ActCopyClipboardWasEnabled && ActCopyClipboard->isEnabled())
+	    ActCopyClipboard->setEnabled(false);
+	if (!ActExternalEditorWasEnabled && ActExternalEditor->isEnabled())
+	    ActExternalEditor->setEnabled(false);
+	if (!ActCopyHashWasEnabled && ActCopyHash->isEnabled())
+	    ActCopyHash->setEnabled(false);
 }
 
 void MainImpl::doFileContexPopup(SCRef fileName, int type) {

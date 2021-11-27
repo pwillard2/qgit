@@ -153,7 +153,7 @@ private:
 	void setRepository(SCRef wd, bool = false, bool = false, const QStringList* = NULL, bool = false);
 	void getExternalDiffArgs(QStringList* args, QStringList* filenames);
 	QString copyFileToDiffIfNeeded(QStringList* filenames, QString sha);
-	QStringList getExternalEditorArgs();
+	QStringList getExternalEditorArgs(const QString &filename);
 	void lineEditSHASetText(SCRef text);
 	void updateCommitMenu(bool isStGITStack);
 	void updateRecentRepoMenu(SCRef newEntry = "");
