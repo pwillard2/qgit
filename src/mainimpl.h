@@ -151,8 +151,8 @@ private:
 	bool isMatch(SCRef sha, SCRef f, int cn, const QMap<QString,bool>& sm);
 	void highlightAbbrevSha(SCRef abbrevSha);
 	void setRepository(SCRef wd, bool = false, bool = false, const QStringList* = NULL, bool = false);
-	void getExternalDiffArgs(QStringList* args, QStringList* filenames);
-	QString copyFileToDiffIfNeeded(QStringList* filenames, QString sha);
+	void getExternalDiffArgs(QStringList* args, QStringList* filenames, bool isTabFile);
+	QString copyFileToDiffIfNeeded(QStringList* filenames, QString sha, const QString &filename);
 	QStringList getExternalEditorArgs(const QString &filename);
 	void lineEditSHASetText(SCRef text);
 	void updateCommitMenu(bool isStGITStack);

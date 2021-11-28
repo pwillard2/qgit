@@ -264,9 +264,19 @@ void MainImpl::ActForward_activated() {
 
 void MainImpl::ActExternalDiff_activated() {
 
+	bool isTabFile = false;
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		bool ctabFound = false;
+		int ctab = data.toInt(&ctabFound);
+		if (ctabFound && (ctab == static_cast<int>(TAB_FILE))) {
+		    isTabFile = true;
+		}
+	}
 	QStringList args;
 	QStringList filenames;
-	getExternalDiffArgs(&args, &filenames);
+	getExternalDiffArgs(&args, &filenames, isTabFile);
 	ExternalDiffProc* externalDiff = new ExternalDiffProc(filenames, this);
 	externalDiff->setWorkingDirectory(curDir);
 
@@ -280,13 +290,13 @@ void MainImpl::ActExternalDiff_activated() {
 
 const QRegExp MainImpl::emptySha("0*");
 
-QString MainImpl::copyFileToDiffIfNeeded(QStringList* filenames, QString sha) {
+QString MainImpl::copyFileToDiffIfNeeded(QStringList* filenames, QString sha, const QString &filename) {
 	if (emptySha.exactMatch(sha))
 	{
-		return QString(curDir + "/" + rv->st.fileName());
+		return QString(curDir + "/" + filename);
 	}
 
-	QFileInfo f(rv->st.fileName());
+	QFileInfo f(filename);
 	QFileInfo fi(f);
 
 	QString fName(curDir + "/" + sha.left(git->shortHashLength()) + "_" + fi.fileName());
@@ -294,8 +304,8 @@ QString MainImpl::copyFileToDiffIfNeeded(QStringList* filenames, QString sha) {
 	QByteArray fileContent;
 	QTextCodec* tc = QTextCodec::codecForLocale();
 
-	QString fileSha(git->getFileSha(rv->st.fileName(), sha));
-	git->getFile(fileSha, NULL, &fileContent, rv->st.fileName());
+	QString fileSha(git->getFileSha(filename, sha));
+	git->getFile(fileSha, NULL, &fileContent, filename);
 	if (!writeToFile(fName, tc->toUnicode(fileContent)))
 	{
 		statusBar()->showMessage("Unable to save " + fName);
@@ -307,17 +317,24 @@ QString MainImpl::copyFileToDiffIfNeeded(QStringList* filenames, QString sha) {
 
 }
 
-void MainImpl::getExternalDiffArgs(QStringList* args, QStringList* filenames) {
+void MainImpl::getExternalDiffArgs(QStringList* args, QStringList* filenames, bool isTabFile) {
 
-	QString prevRevSha(rv->st.diffToSha());
-	if (prevRevSha.isEmpty()) { // default to first parent
-		const Rev* r = git->revLookup(rv->st.sha());
-		prevRevSha = (r && r->parentsCount() > 0 ? r->parent(0) : rv->st.sha());
-	}
+    Domain* t;
+    if (!isTabFile || (currentTabType(&t) != TAB_FILE)) { // isTabFile means it should be TAB_FILE
+	t = rv; // default is rev
+    }
+    QString currRevSha = t->st.sha();
+    QString prevRevSha = t->st.diffToSha();
+    QString filename = t->st.fileName();
+
+    if (prevRevSha.isEmpty()) { // default to first parent
+	const Rev* r = git->revLookup(currRevSha);
+	prevRevSha = (r && r->parentsCount() > 0 ? r->parent(0) : currRevSha);
+    }
 	// save files to diff in working directory,
 	// will be removed by ExternalDiffProc on exit
-	QString fName1 = copyFileToDiffIfNeeded(filenames, rv->st.sha());
-	QString fName2 = copyFileToDiffIfNeeded(filenames, prevRevSha);
+    QString fName1 = copyFileToDiffIfNeeded(filenames, currRevSha, filename);
+    QString fName2 = copyFileToDiffIfNeeded(filenames, prevRevSha, filename);
 
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
@@ -1409,8 +1426,14 @@ void MainImpl::doContexPopup(SCRef sha) {
 	if (isRevPage && ActViewDiffNewTab->isEnabled())
 		contextMenu.addAction(ActViewDiffNewTab);
 
-	if (!isFilePage && ActExternalDiff->isEnabled())
+	if (ActExternalDiff->isEnabled()) {
+ 		if (isFilePage) {
+		    QVariant ctab;
+		    ctab.setValue(tt);
+		    ActExternalDiff->setData(ctab);
+		}
 		contextMenu.addAction(ActExternalDiff);
+	}
 
 	if (isFilePage) {
 		QVariant ctab;
@@ -1495,6 +1518,7 @@ void MainImpl::doContexPopup(SCRef sha) {
 	ActExternalEditor->setData(QVariant()); // invalid
 	ActCopyClipboard->setData(QVariant());  // invalid
 	ActCopyHash->setData(QVariant());       // invalid
+	ActExternalDiff->setData(QVariant());   // invalid
 
 	// restore previous enable property values
 	if (!ActCopyClipboardWasEnabled && ActCopyClipboard->isEnabled())

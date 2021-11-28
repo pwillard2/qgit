@@ -265,8 +265,7 @@ bool ListView::update() {
 				sel->select(newIndex, QItemSelectionModel::Deselect);
 		}
 	}
-	if (git->isMainHistory(fh))
-		emit diffTargetChanged(row(st->diffToSha()));
+	emit diffTargetChanged(row(st->diffToSha()));
 
 	return currentIndex().isValid();
 }
