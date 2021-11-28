@@ -1416,6 +1416,7 @@ void MainImpl::doContexPopup(SCRef sha) {
 	bool ActExternalEditorWasEnabled = ActExternalEditor->isEnabled();
 	bool ActCopyClipboardWasEnabled = ActCopyClipboard->isEnabled();
 	bool ActCopyHashWasEnabled = ActCopyHash->isEnabled();
+	bool ActExternalDiffWasEnabled = ActExternalDiff->isEnabled();
 
 	if (isFilePage && ActViewRev->isEnabled())
 		contextMenu.addAction(ActViewRev);
@@ -1426,12 +1427,13 @@ void MainImpl::doContexPopup(SCRef sha) {
 	if (isRevPage && ActViewDiffNewTab->isEnabled())
 		contextMenu.addAction(ActViewDiffNewTab);
 
-	if (ActExternalDiff->isEnabled()) {
- 		if (isFilePage) {
-		    QVariant ctab;
-		    ctab.setValue(tt);
-		    ActExternalDiff->setData(ctab);
-		}
+        if (isFilePage) {
+		QVariant ctab;
+		ctab.setValue(tt);
+		ActExternalDiff->setData(ctab);
+		contextMenu.addAction(ActExternalDiff);
+                ActExternalDiff->setEnabled(true);
+	} else if (ActExternalDiff->isEnabled()) {
 		contextMenu.addAction(ActExternalDiff);
 	}
 
@@ -1527,6 +1529,8 @@ void MainImpl::doContexPopup(SCRef sha) {
 	    ActExternalEditor->setEnabled(false);
 	if (!ActCopyHashWasEnabled && ActCopyHash->isEnabled())
 	    ActCopyHash->setEnabled(false);
+	if (!ActExternalDiffWasEnabled && ActExternalDiff->isEnabled())
+	    ActExternalDiff->setEnabled(false);
 }
 
 void MainImpl::doFileContexPopup(SCRef fileName, int type) {
