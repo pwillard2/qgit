@@ -52,6 +52,7 @@ int Rev::indexData(bool quick, bool withDiff) const {
         - one line with committer name + e-mail
         - one line with author name + e-mail
         - one line with author date as unix timestamp
+        - one line with committer date as unix timestamp
         - zero or more non blank lines with other info, as the encoding FIXME
         - one blank line
         - zero or one line with log title

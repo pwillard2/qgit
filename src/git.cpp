@@ -1949,7 +1949,7 @@ Rev* Git::fakeRevData(SCRef sha, SCList parents, SCRef author, SCRef date, SCRef
                       SCRef patch, int idx, FileHistory* fh) {
 
         QString data('>' + sha + 'X' + parents.join(" ") + " \n");
-        data.append(author + '\n' + author + '\n' + date + '\n');
+        data.append(author + '\n' + author + '\n' + date + '\n' + date + '\n');
         data.append(log + '\n' + longLog);
 
         QString header("log size " + QString::number(QByteArray(data.toLatin1()).length() - 1) + '\n');
