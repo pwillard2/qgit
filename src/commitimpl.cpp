@@ -53,6 +53,8 @@ CommitImpl::CommitImpl(Git* g, bool amend) : git(g) {
 			myColor = Qt::darkGreen;
 		else if (f->statusCmp(i, RevFile::DELETED))
 			myColor = Qt::red;
+		else if (f->statusCmp(i, RevFile::IN_INDEX))
+			myColor = Qt::darkMagenta;
 
 		QTreeWidgetItem* item = new QTreeWidgetItem(treeWidgetFiles);
 		item->setText(0, git->filePath(*f, i));

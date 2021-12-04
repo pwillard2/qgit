@@ -194,6 +194,9 @@ void FileList::insertFiles(const RevFile* files) {
 				              : Qt::green;
 			else if (files->statusCmp(i, RevFile::DELETED))
 				clr = Qt::red;
+			else if (files->statusCmp(i, RevFile::IN_INDEX))
+				clr = useDark ? Qt::darkMagenta
+				              : Qt::magenta;
 		} else {
 			clr = useDark ? Qt::darkBlue
 			              : QColor(Qt::blue).lighter();
