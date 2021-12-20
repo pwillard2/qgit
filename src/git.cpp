@@ -117,17 +117,39 @@ void Git::userInfo(SList info) {
 	info.clear();
 	info << "Environment" << user << email;
 
+	emailList = QStringList();
+	emailList += email.trimmed();
+
 	errorReportingEnabled = false; // 'git config' could fail, see docs
 
 	run("git config user.name", &user);
 	run("git config user.email", &email);
 	info << "Local config" << user << email;
+	emailList += email.trimmed();
 
 	run("git config --global user.name", &user);
 	run("git config --global user.email", &email);
 	info << "Global config" << user << email;
+	emailList += email.trimmed();
 
 	errorReportingEnabled = true;
+}
+
+// this assumes Git::userInfo is called at least once
+bool Git::isKnownEmail(const QString &emailName)
+{
+    if (!emailName.isEmpty()) {
+        FOREACH_SL(it, emailList) {
+            const QString &emailItem = *it;
+            if (!emailItem.isEmpty()) {
+                const QString emailItembrk = "<" + emailItem + ">";
+                if ((emailName == emailItem) || emailName.contains(emailItembrk)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 const QStringList Git::getGitConfigList(bool global) {
@@ -2399,6 +2421,9 @@ void Git::init2() {
                         SHOW_MSG("ERROR: unable to start 'git log'");
 
                 setThrowOnStop(false);
+
+                QStringList notUsed;
+                userInfo(notUsed); // get email info
 
         } catch (int i) {
 

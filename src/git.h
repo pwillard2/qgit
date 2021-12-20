@@ -142,6 +142,7 @@ public:
 	int shortHashLength() const { return shortHashLen; }
 	void setCurContext(Domain* d) { curDomain = d; }
 	Domain* curContext() const { return curDomain; }
+	bool isKnownEmail(const QString &emailName);
 
 signals:
 	void newRevsAdded(const FileHistory*, const QVector<ShaString>&);
@@ -292,6 +293,7 @@ private:
 	QHash<QString, int> fileNamesMap; // quick lookup file name
 	QHash<QString, int> dirNamesMap;  // quick lookup directory name
 	FileHistory* revData;
+	QStringList emailList;
 };
 
 #endif

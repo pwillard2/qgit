@@ -1088,14 +1088,7 @@ void ListViewDelegate::paintEmail(QPainter* p, const QStyleOptionViewItem& opt,
 		return;
 
         QString emailName = (column == AUTH_COL) ? r->author() : ((column == COMMITTER_COL) ? r->committer() : "");
-
-         // Get Email from settings (only works if settings were done at least once)
-	QSettings settings;
-	const QString Email(settings.value(EMAIL_KEY).toString());
-        const QString EmailTr = Email.trimmed();
-        const QString EmailBrkt = "<" + EmailTr + ">";
-
-        if ((emailName == EmailTr) || emailName.contains(EmailBrkt)) {
+        if (git->isKnownEmail(emailName)) {
             p->fillRect(opt.rect, QColor(0xff,0xfa,0xcd)); // light yellow
         }
         QItemDelegate::paint(p, opt, index);
