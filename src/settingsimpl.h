@@ -45,7 +45,6 @@ protected slots:
 	void lineEditExcludePerDir_textChanged(const QString& s);
 	void lineEditTemplate_textChanged(const QString& s);
 	void lineEditCommitExtraOptions_textChanged(const QString& s);
-	void lineEditMail_textChanged(const QString& s);
 	void comboBoxCodecs_activated(int i);
 	void comboBoxUserSrc_activated(int i);
 	void comboBoxGitConfigSource_activated(int i);

@@ -201,7 +201,6 @@ namespace QGit {
 	extern const QString FILE_COLS_KEY;
 	extern const QString CMT_TEMPL_KEY;
 	extern const QString CMT_ARGS_KEY;
-	extern const QString EMAIL_KEY;
 	extern const QString RANGE_FROM_KEY;
 	extern const QString RANGE_TO_KEY;
 	extern const QString RANGE_OPT_KEY;

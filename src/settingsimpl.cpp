@@ -380,8 +380,3 @@ void SettingsImpl::lineEditCommitExtraOptions_textChanged(const QString& s) {
 
 	writeSetting(CMT_ARGS_KEY, s);
 }
-
-void SettingsImpl::lineEditMail_textChanged(const QString& s) {
-
-	writeSetting(EMAIL_KEY, s);
-}
