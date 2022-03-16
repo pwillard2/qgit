@@ -214,6 +214,8 @@ namespace QGit {
 	extern const QString ACT_GROUP_KEY;
 	extern const QString ACT_TEXT_KEY;
 	extern const QString ACT_FLAGS_KEY;
+	extern const QString URL_REGEX_KEY;
+ 	extern const QString URL_PREFIX_KEY;
 
 	// settings default values
 	extern const QString CMT_TEMPL_DEF;
@@ -221,6 +223,8 @@ namespace QGit {
 	extern const QString EX_PER_DIR_DEF;
 	extern const QString EXT_DIFF_DEF;
 	extern const QString EXT_EDITOR_DEF;
+	extern const QString URL_REGEX_DEF;
+	extern const QString URL_PREFIX_DEF;
 
 	// settings booleans
 	enum FlagType {
@@ -243,6 +247,7 @@ namespace QGit {
 		OPEN_IN_EDITOR_F = 1 << 16,
 		ENABLE_DRAGNDROP_F = 1 << 17,
 		ENABLE_SHORTREF_F = 1 << 18,
+ 		ENABLE_EXTLINK = 1 << 19,
 	};
 	const int FLAGS_DEF = USE_CMT_MSG_F | RANGE_SELECT_F | SMART_LBL_F | VERIFY_CMT_F | SIGN_PATCH_F | LOG_DIFF_TAB_F | MSG_ON_NEW_F | ENABLE_DRAGNDROP_F;
 

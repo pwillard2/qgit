@@ -8,6 +8,8 @@
 */
 #include <QClipboard>
 #include <QCloseEvent>
+#include <QDebug>
+#include <QDesktopServices>
 #include <QEvent>
 #include <QFileDialog>
 #include <QInputDialog>
@@ -22,6 +24,7 @@
 #include <QTimer>
 #include <QWheelEvent>
 #include <QTextCodec>
+#include <QUrl>
 #include <assert.h>
 #include "config.h" // defines PACKAGE_VERSION
 #include "consoleimpl.h"
@@ -456,6 +459,18 @@ void MainImpl::ActCopyHash_activated() {
 			QClipboard *clipboard = QApplication::clipboard();
 			clipboard->setText(Sha, QClipboard::Clipboard);
 		}
+	}
+}
+
+void MainImpl::ActOpenLink_activated() {
+
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		QString rxl = data.toString();
+		QSettings settings;
+		QString frxl(settings.value(URL_PREFIX_KEY, URL_PREFIX_DEF).toString());
+		QDesktopServices::openUrl(QUrl(frxl + rxl));
 	}
 }
 
@@ -1416,6 +1431,8 @@ void MainImpl::doContexPopup(SCRef sha) {
 	bool ActExternalEditorWasEnabled = ActExternalEditor->isEnabled();
 	bool ActCopyClipboardWasEnabled = ActCopyClipboard->isEnabled();
 	bool ActCopyHashWasEnabled = ActCopyHash->isEnabled();
+	bool ActOpenLinkWasEnabled = ActOpenLink->isEnabled();
+	QString ActOpenLinkWasText = ActOpenLink->text();
 	bool ActExternalDiffWasEnabled = ActExternalDiff->isEnabled();
 
 	if (isFilePage && ActViewRev->isEnabled())
@@ -1427,12 +1444,12 @@ void MainImpl::doContexPopup(SCRef sha) {
 	if (isRevPage && ActViewDiffNewTab->isEnabled())
 		contextMenu.addAction(ActViewDiffNewTab);
 
-        if (isFilePage) {
+	if (isFilePage) {
 		QVariant ctab;
 		ctab.setValue(tt);
 		ActExternalDiff->setData(ctab);
 		contextMenu.addAction(ActExternalDiff);
-                ActExternalDiff->setEnabled(true);
+		ActExternalDiff->setEnabled(true);
 	} else if (ActExternalDiff->isEnabled()) {
 		contextMenu.addAction(ActExternalDiff);
 	}
@@ -1486,7 +1503,30 @@ void MainImpl::doContexPopup(SCRef sha) {
 			ActCopyHash->setData(chash);
 			contextMenu.addAction(ActCopyHash);
 		}
+	}
 
+	if (isRevPage || isFilePage) {
+		if ((sha != ZERO_SHA) && testFlag(ENABLE_EXTLINK, FLAGS_KEY)) {
+			const QString shortLog = git->getShortLog(sha);
+			if (shortLog != "") {
+				QSettings settings;
+				QString strRx(settings.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
+				QRegExp rx(strRx);
+				int pos = rx.indexIn(shortLog, 0);
+				if (pos != -1) {
+					QVariant clink;
+					QString rxl = rx.cap(1);
+					clink.setValue(rxl);
+					ActOpenLink->setData(clink);
+					ActOpenLink->setText("Open " + rxl);
+					contextMenu.addAction(ActOpenLink);
+					ActOpenLink->setEnabled(true);
+				}
+			}
+		}
+	}
+
+	if (isRevPage) {
 		contextMenu.addSeparator();
 
 		QStringList bn(git->getAllRefNames(Git::BRANCH, Git::optOnlyLoaded));
@@ -1520,17 +1560,22 @@ void MainImpl::doContexPopup(SCRef sha) {
 	ActExternalEditor->setData(QVariant()); // invalid
 	ActCopyClipboard->setData(QVariant());  // invalid
 	ActCopyHash->setData(QVariant());       // invalid
+	ActOpenLink->setData(QVariant());       // invalid
 	ActExternalDiff->setData(QVariant());   // invalid
 
 	// restore previous enable property values
 	if (!ActCopyClipboardWasEnabled && ActCopyClipboard->isEnabled())
-	    ActCopyClipboard->setEnabled(false);
+		ActCopyClipboard->setEnabled(false);
 	if (!ActExternalEditorWasEnabled && ActExternalEditor->isEnabled())
-	    ActExternalEditor->setEnabled(false);
+		ActExternalEditor->setEnabled(false);
+	if (ActExternalEditorWasEnabled && !ActExternalEditor->isEnabled())
+		ActOpenLink->setText(ActOpenLinkWasText); // restore original text if it was enabled
 	if (!ActCopyHashWasEnabled && ActCopyHash->isEnabled())
-	    ActCopyHash->setEnabled(false);
+		ActCopyHash->setEnabled(false);
+	if (!ActOpenLinkWasEnabled && ActOpenLink->isEnabled())
+		ActOpenLink->setEnabled(false);
 	if (!ActExternalDiffWasEnabled && ActExternalDiff->isEnabled())
-	    ActExternalDiff->setEnabled(false);
+		ActExternalDiff->setEnabled(false);
 }
 
 void MainImpl::doFileContexPopup(SCRef fileName, int type) {

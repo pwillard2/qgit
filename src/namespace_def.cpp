@@ -191,6 +191,8 @@ const QString QGit::ACT_LIST_KEY    = "Custom_actions/list";
 const QString QGit::ACT_GROUP_KEY   = "Custom_action_list/";
 const QString QGit::ACT_TEXT_KEY    = "/commands";
 const QString QGit::ACT_FLAGS_KEY   = "/flags";
+const QString QGit::URL_REGEX_KEY   = "ExternalLink/url_regex";
+const QString QGit::URL_PREFIX_KEY  = "ExternalLink/url_prefix";
 
 // settings default values
 const QString QGit::CMT_TEMPL_DEF   = ".git/commit-template";
@@ -198,6 +200,8 @@ const QString QGit::EX_DEF          = ".git/info/exclude";
 const QString QGit::EX_PER_DIR_DEF  = ".gitignore";
 const QString QGit::EXT_DIFF_DEF    = "kompare";
 const QString QGit::EXT_EDITOR_DEF  = "emacs";
+const QString QGit::URL_REGEX_DEF   = "([A-Z]+-[1-9][0-9]*)"; // CAPITAL-LETTERS + - + numbers
+const QString QGit::URL_PREFIX_DEF  = "http://fixMe/";
 
 // cache file
 const QString QGit::BAK_EXT          = ".bak";

@@ -67,6 +67,8 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	SCRef exPDir(set.value(EX_PER_DIR_KEY, EX_PER_DIR_DEF).toString());
 	SCRef tmplt(set.value(CMT_TEMPL_KEY, CMT_TEMPL_DEF).toString());
 	SCRef CMArgs(set.value(CMT_ARGS_KEY).toString());
+	SCRef urlRegex(set.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
+	SCRef urlPrefix(set.value(URL_PREFIX_KEY, URL_PREFIX_DEF).toString());
 
 	lineEditApplyPatchExtraOptions->setText(APOpt);
 	lineEditFormatPatchExtraOptions->setText(FPOpt);
@@ -78,9 +80,12 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	lineEditCommitExtraOptions->setText(CMArgs);
 	lineEditTypeWriterFont->setText(TYPE_WRITER_FONT.toString());
 	lineEditTypeWriterFont->setCursorPosition(0); // font description could be long
+	lineEditUrlPrefix->setText(urlPrefix);
+	lineEditUrlRegex->setText(urlRegex);
 
 	setupCodecsCombo();
 	checkBoxDiffCache_toggled(checkBoxDiffCache->isChecked());
+	checkExternalLink_toggled(checkExternalLink->isChecked());
 	tabDialog->setCurrentIndex(defTab);
 	userInfo();
 	comboBoxGitConfigSource_activated(0);
@@ -379,4 +384,21 @@ void SettingsImpl::lineEditTemplate_textChanged(const QString& s) {
 void SettingsImpl::lineEditCommitExtraOptions_textChanged(const QString& s) {
 
 	writeSetting(CMT_ARGS_KEY, s);
+}
+
+void SettingsImpl::lineEditUrlRegex_textChanged(const QString& s) {
+
+	writeSetting(URL_REGEX_KEY, s);
+}
+
+void SettingsImpl::lineEditUrlPrefix_textChanged(const QString& s) {
+
+	writeSetting(URL_PREFIX_KEY, s);
+}
+
+void SettingsImpl::checkExternalLink_toggled(bool b) {
+
+	changeFlag(ENABLE_EXTLINK, b);
+	lineEditUrlPrefix->setEnabled(b);
+	lineEditUrlRegex->setEnabled(b);
 }
