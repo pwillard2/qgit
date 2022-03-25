@@ -57,6 +57,7 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	checkBoxMsgOnNewSHA->setChecked(f & MSG_ON_NEW_F);
 	checkBoxEnableDragnDrop->setChecked(f & ENABLE_DRAGNDROP_F);
 	checkBoxShowShortRef->setChecked(f & ENABLE_SHORTREF_F);
+        checkExternalLink->setChecked(f & ENABLE_EXTLINK);
 
 	QSettings set;
 	SCRef APOpt(set.value(AM_P_OPT_KEY).toString());
