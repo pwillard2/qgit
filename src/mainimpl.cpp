@@ -1507,20 +1507,27 @@ void MainImpl::doContexPopup(SCRef sha) {
 
 	if (isRevPage || isFilePage) {
 		if ((sha != ZERO_SHA) && testFlag(ENABLE_EXTLINK, FLAGS_KEY)) {
-			const QString shortLog = git->getShortLog(sha);
-			if (shortLog != "") {
-				QSettings settings;
-				QString strRx(settings.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
-				QRegExp rx(strRx);
-				int pos = rx.indexIn(shortLog, 0);
-				if (pos != -1) {
-					QVariant clink;
-					QString rxl = rx.cap(1);
-					clink.setValue(rxl);
-					ActOpenLink->setData(clink);
-					ActOpenLink->setText("Open " + rxl);
-					contextMenu.addAction(ActOpenLink);
-					ActOpenLink->setEnabled(true);
+			Domain* t;
+			if (currentTabType(&t) < 0) {
+				t = rv; // default is rev (should not happen)
+			}
+			if (t) {
+				const Rev* r = git->revLookup(sha, t->model());
+				const QString shortLog = r ? r->shortLog() : "";
+				if (shortLog != "") {
+					QSettings settings;
+					QString strRx(settings.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
+					QRegExp rx(strRx);
+					int pos = rx.indexIn(shortLog, 0);
+					if (pos != -1) {
+						QVariant clink;
+						QString rxl = rx.cap(1);
+						clink.setValue(rxl);
+						ActOpenLink->setData(clink);
+						ActOpenLink->setText("Open " + rxl);
+						contextMenu.addAction(ActOpenLink);
+						ActOpenLink->setEnabled(true);
+					}
 				}
 			}
 		}
