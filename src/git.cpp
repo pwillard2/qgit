@@ -135,6 +135,27 @@ void Git::userInfo(SList info) {
 	errorReportingEnabled = true;
 }
 
+
+bool Git::gitConfigGet(bool local, const QString &name, QString &output)
+{
+	bool retval;
+	QString result;
+	if (local)
+		retval= run("git config "+ name, &result);
+	else
+		retval= run("git config --global "+ name, &result);
+	output = result.trimmed();
+	return retval;
+}
+
+bool Git::gitConfigSet(bool local, const QString &name, const QString &value)
+{
+	if (local)
+		return run("git config --replace-all "+ name + " " + value);
+	else
+		return run("git config --global --replace-all "+ name  + " " + value);
+}
+
 // this assumes Git::userInfo is called at least once
 bool Git::isKnownEmail(const QString &emailName)
 {
@@ -159,9 +180,9 @@ const QStringList Git::getGitConfigList(bool global) {
     errorReportingEnabled = false; // 'git config' could fail, see docs
 
     if (global)
-        run("git config --global --list", &runOutput);
+	    run("git config --global --list", &runOutput);
     else
-        run("git config --list", &runOutput);
+	    run("git config --list", &runOutput);
 
     errorReportingEnabled = true;
 

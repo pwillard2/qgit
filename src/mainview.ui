@@ -623,7 +623,7 @@
     <string>Copy Commit hash</string>
    </property>
   </action>
-  <action name="ActOpenLink">
+  <action name="ActOpenLinkLog">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -631,7 +631,15 @@
     <string>Open Link</string>
    </property>
   </action>
-   <action name="ActViewRev">
+  <action name="ActOpenLinkCommit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open Link</string>
+   </property>
+  </action>
+  <action name="ActViewRev">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1291,12 +1299,18 @@
    <slot>ActCopyHash_activated()</slot>
  </connection>
   <connection>
-    <sender>ActOpenLink</sender>
+    <sender>ActOpenLinkLog</sender>
    <signal>triggered()</signal>
    <receiver>MainBase</receiver>
-   <slot>ActOpenLink_activated()</slot>
+   <slot>ActOpenLinkLog_activated()</slot>
   </connection>
   <connection>
+    <sender>ActOpenLinkCommit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainBase</receiver>
+   <slot>ActOpenLinkCommit_activated()</slot>
+  </connection>
+   <connection>
    <sender>ActDelete</sender>
    <signal>triggered()</signal>
    <receiver>MainBase</receiver>

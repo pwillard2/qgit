@@ -45,11 +45,15 @@ protected slots:
 	void lineEditExcludePerDir_textChanged(const QString& s);
 	void lineEditTemplate_textChanged(const QString& s);
 	void lineEditCommitExtraOptions_textChanged(const QString& s);
-	void checkExternalLink_toggled(bool b);
+	void checkExternalLinkLog_toggled(bool b);
+	void checkExternalLinkCommit_toggled(bool b);
 	void lineEditUrlPrefix_textChanged(const QString& s);
 	void lineEditUrlRegex_textChanged(const QString& s);
+	void lineEditUrlCommit_textChanged(const QString& s);
 	void comboBoxCodecs_activated(int i);
 	void comboBoxUserSrc_activated(int i);
+	void comboBoxExtLinkLog_activated(int i);
+	void comboBoxExtLinkCommit_activated(int i);
 	void comboBoxGitConfigSource_activated(int i);
 	void treeWidgetGitConfig_itemChanged(QTreeWidgetItem*, int);
 	void pushButtonExtDiff_clicked();

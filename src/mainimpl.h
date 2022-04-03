@@ -107,7 +107,8 @@ protected slots:
 	void ActExternalEditor_activated();
 	void ActCopyClipboard_activated();
 	void ActCopyHash_activated();
-	void ActOpenLink_activated();
+	void ActOpenLinkLog_activated();
+	void ActOpenLinkCommit_activated();
 	void ActSplitView_activated();
 	void ActToggleLogsDiff_activated();
 	void ActShowDescHeader_activated();

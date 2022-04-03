@@ -60,6 +60,8 @@ public:
 	void setDefaultModel(FileHistory* fh) { revData = fh; }
 	void checkEnvironment();
 	void userInfo(SList info);
+	bool gitConfigGet(bool local, const QString &name, QString &output);
+	bool gitConfigSet(bool local, const QString &name, const QString &value);
 	const QStringList getGitConfigList(bool global);
         bool getGitDBDir(SCRef wd, QString& gd, bool& changed);
         bool getBaseDir(SCRef wd, QString& bd, bool& changed);

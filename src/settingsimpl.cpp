@@ -57,7 +57,37 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	checkBoxMsgOnNewSHA->setChecked(f & MSG_ON_NEW_F);
 	checkBoxEnableDragnDrop->setChecked(f & ENABLE_DRAGNDROP_F);
 	checkBoxShowShortRef->setChecked(f & ENABLE_SHORTREF_F);
-        checkExternalLink->setChecked(f & ENABLE_EXTLINK);
+
+	{
+		QString local, enabled, prefix, regex;
+		if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+			bool isLocal = (local != "false"); // default is local true
+			git->gitConfigGet(isLocal, EXTLINK_LOG_ENABLED, enabled);
+			checkExternalLinkLog->setChecked(enabled == "true");
+			git->gitConfigGet(isLocal, EXTLINK_LOG_PREFIX, prefix);
+			lineEditUrlPrefix->setText(prefix);
+			git->gitConfigGet(isLocal, EXTLINK_LOG_REGEX, regex);
+			lineEditUrlRegex->setText(regex );
+			comboBoxExtLinkLog->addItem("Local git config");
+			comboBoxExtLinkLog->addItem("Global git config");
+			comboBoxExtLinkLog->setCurrentIndex(isLocal ? 0 : 1);
+		}
+	}
+
+
+	{
+		QString local, enabled, prefix;
+		if (git->gitConfigGet(true, EXTLINK_COMMIT_LOCAL, local)) {
+			bool isLocal = (local != "false"); // default is local true
+			git->gitConfigGet(isLocal, EXTLINK_COMMIT_ENABLED, enabled);
+			checkExternalLinkCommit->setChecked(enabled == "true");
+			git->gitConfigGet(isLocal, EXTLINK_COMMIT_PREFIX, prefix);
+			lineEditUrlCommit->setText(prefix);
+			comboBoxExtLinkCommit->addItem("Local git config");
+			comboBoxExtLinkCommit->addItem("Global git config");
+			comboBoxExtLinkCommit->setCurrentIndex(isLocal ? 0 : 1);
+		}
+	}
 
 	QSettings set;
 	SCRef APOpt(set.value(AM_P_OPT_KEY).toString());
@@ -68,8 +98,6 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	SCRef exPDir(set.value(EX_PER_DIR_KEY, EX_PER_DIR_DEF).toString());
 	SCRef tmplt(set.value(CMT_TEMPL_KEY, CMT_TEMPL_DEF).toString());
 	SCRef CMArgs(set.value(CMT_ARGS_KEY).toString());
-	SCRef urlRegex(set.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
-	SCRef urlPrefix(set.value(URL_PREFIX_KEY, URL_PREFIX_DEF).toString());
 
 	lineEditApplyPatchExtraOptions->setText(APOpt);
 	lineEditFormatPatchExtraOptions->setText(FPOpt);
@@ -81,12 +109,11 @@ SettingsImpl::SettingsImpl(QWidget* p, Git* g, int defTab) : QDialog(p), git(g) 
 	lineEditCommitExtraOptions->setText(CMArgs);
 	lineEditTypeWriterFont->setText(TYPE_WRITER_FONT.toString());
 	lineEditTypeWriterFont->setCursorPosition(0); // font description could be long
-	lineEditUrlPrefix->setText(urlPrefix);
-	lineEditUrlRegex->setText(urlRegex);
 
 	setupCodecsCombo();
 	checkBoxDiffCache_toggled(checkBoxDiffCache->isChecked());
-	checkExternalLink_toggled(checkExternalLink->isChecked());
+	checkExternalLinkLog_toggled(checkExternalLinkLog->isChecked());
+	checkExternalLinkCommit_toggled(checkExternalLinkCommit->isChecked());
 	tabDialog->setCurrentIndex(defTab);
 	userInfo();
 	comboBoxGitConfigSource_activated(0);
@@ -178,6 +205,58 @@ void SettingsImpl::comboBoxUserSrc_activated(int i) {
 
 	lineEditAuthor->setText(_uInfo[i * 3 + 1]);
 	lineEditMail->setText(_uInfo[i * 3 + 2]);
+}
+
+// git config
+//   qgit.extlink.commit.local    Always stored locally - default False
+//   qgit.extlink.commit.enabled  local or global
+//   qgit.extlink.commit.prefix   local or global
+//   qgit.extlink.log.local       Always stored locally - default False
+//   qgit.extlink.log.enabled     local or global
+//   qgit.extlink.log.prefix      local or global
+//   qgit.extlink.log.regex       local or global
+
+void SettingsImpl::comboBoxExtLinkCommit_activated(int i) {
+
+	QString local;
+	bool isLocal = (i == 0);
+	if (i == 0) {
+		local = "true"; // local
+	} else if (i == 1) {
+		local = "false"; // global
+	} else {
+		dbp("invalid index %1", i);
+		return;
+	}
+	if (git->gitConfigSet(true, EXTLINK_COMMIT_LOCAL, local)) {  // local stored always locally
+		QString enabled, prefix;
+		git->gitConfigGet(isLocal, EXTLINK_COMMIT_ENABLED, enabled);
+		checkExternalLinkCommit->setChecked(enabled == "true");
+		git->gitConfigGet(isLocal, EXTLINK_COMMIT_PREFIX, prefix);
+		lineEditUrlCommit->setText(prefix);
+	}
+}
+
+void SettingsImpl::comboBoxExtLinkLog_activated(int i) {
+	QString local;
+	bool isLocal = (i == 0);
+	if (i == 0) {
+		local = "true"; // local
+	} else if (i == 1) {
+		local = "false"; // global
+	} else {
+		dbp("invalid index %1", i);
+		return;
+	}
+	if (git->gitConfigSet(true, EXTLINK_LOG_LOCAL, local)) { // local stored always locally
+		QString enabled, prefix, regex;
+		git->gitConfigGet(isLocal, EXTLINK_LOG_ENABLED, enabled);
+		checkExternalLinkLog->setChecked(enabled == "true");
+		git->gitConfigGet(isLocal, EXTLINK_LOG_PREFIX, prefix);
+		lineEditUrlPrefix->setText(prefix);
+		git->gitConfigGet(isLocal, EXTLINK_LOG_REGEX, regex);
+		lineEditUrlRegex->setText(regex);
+	}
 }
 
 void SettingsImpl::comboBoxGitConfigSource_activated(int) {
@@ -389,17 +468,48 @@ void SettingsImpl::lineEditCommitExtraOptions_textChanged(const QString& s) {
 
 void SettingsImpl::lineEditUrlRegex_textChanged(const QString& s) {
 
-	writeSetting(URL_REGEX_KEY, s);
+	QString local;
+	if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+		bool isLocal = (local != "false"); // default is local true
+		git->gitConfigSet(isLocal, EXTLINK_LOG_REGEX, s);
+	}
 }
 
 void SettingsImpl::lineEditUrlPrefix_textChanged(const QString& s) {
 
-	writeSetting(URL_PREFIX_KEY, s);
+	QString local;
+	if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+		bool isLocal = (local != "false"); // default is local true
+		git->gitConfigSet(isLocal, EXTLINK_LOG_PREFIX, s);
+	}
 }
 
-void SettingsImpl::checkExternalLink_toggled(bool b) {
+void SettingsImpl::lineEditUrlCommit_textChanged(const QString& s) {
 
-	changeFlag(ENABLE_EXTLINK, b);
+	QString local;
+	if (git->gitConfigGet(true, EXTLINK_COMMIT_LOCAL, local)) {
+		bool isLocal = (local != "false"); // default is local true
+		git->gitConfigSet(isLocal, EXTLINK_COMMIT_PREFIX, s);
+	}
+}
+
+void SettingsImpl::checkExternalLinkLog_toggled(bool b) {
+
+	QString local;
+	if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+		bool isLocal = (local != "false"); // default is local true
+		git->gitConfigSet(isLocal, EXTLINK_LOG_ENABLED, (b ? "true" : "false"));
+	}
 	lineEditUrlPrefix->setEnabled(b);
 	lineEditUrlRegex->setEnabled(b);
+}
+
+void SettingsImpl::checkExternalLinkCommit_toggled(bool b) {
+
+	QString local;
+	if (git->gitConfigGet(true, EXTLINK_COMMIT_LOCAL, local)) {
+		bool isLocal = (local != "false"); // default is local true
+		git->gitConfigSet(isLocal, EXTLINK_COMMIT_ENABLED, (b ? "true" : "false"));
+	}
+	lineEditUrlCommit->setEnabled(b);
 }

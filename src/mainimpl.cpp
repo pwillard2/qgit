@@ -462,15 +462,34 @@ void MainImpl::ActCopyHash_activated() {
 	}
 }
 
-void MainImpl::ActOpenLink_activated() {
+void MainImpl::ActOpenLinkLog_activated() {
 
 	QAction* act = qobject_cast<QAction *>(sender());
 	if (act != 0) {
 		QVariant data = act->data();
 		QString rxl = data.toString();
-		QSettings settings;
-		QString frxl(settings.value(URL_PREFIX_KEY, URL_PREFIX_DEF).toString());
-		QDesktopServices::openUrl(QUrl(frxl + rxl));
+
+		QString local, prefix;
+		if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+			bool isLocal = (local != "false"); // default is local true
+			git->gitConfigGet(isLocal, EXTLINK_LOG_PREFIX, prefix);
+			QDesktopServices::openUrl(QUrl(prefix + rxl));
+		}
+	}
+}
+
+void MainImpl::ActOpenLinkCommit_activated() {
+
+	QAction* act = qobject_cast<QAction *>(sender());
+	if (act != 0) {
+		QVariant data = act->data();
+		QString rxl = data.toString();
+		QString local, prefix;
+		if (git->gitConfigGet(true, EXTLINK_COMMIT_LOCAL, local)) {
+			bool isLocal = (local != "false"); // default is local true
+			git->gitConfigGet(isLocal, EXTLINK_COMMIT_PREFIX, prefix);
+			QDesktopServices::openUrl(QUrl(prefix + rxl));
+		}
 	}
 }
 
@@ -1431,8 +1450,10 @@ void MainImpl::doContexPopup(SCRef sha) {
 	bool ActExternalEditorWasEnabled = ActExternalEditor->isEnabled();
 	bool ActCopyClipboardWasEnabled = ActCopyClipboard->isEnabled();
 	bool ActCopyHashWasEnabled = ActCopyHash->isEnabled();
-	bool ActOpenLinkWasEnabled = ActOpenLink->isEnabled();
-	QString ActOpenLinkWasText = ActOpenLink->text();
+	bool ActOpenLinkLogWasEnabled = ActOpenLinkLog->isEnabled();
+	QString ActOpenLinkLogWasText = ActOpenLinkLog->text();
+	bool ActOpenLinkCommitWasEnabled = ActOpenLinkCommit->isEnabled();
+	QString ActOpenLinkCommitWasText = ActOpenLinkCommit->text();
 	bool ActExternalDiffWasEnabled = ActExternalDiff->isEnabled();
 
 	if (isFilePage && ActViewRev->isEnabled())
@@ -1506,29 +1527,53 @@ void MainImpl::doContexPopup(SCRef sha) {
 	}
 
 	if (isRevPage || isFilePage) {
-		if ((sha != ZERO_SHA) && testFlag(ENABLE_EXTLINK, FLAGS_KEY)) {
-			Domain* t;
-			if (currentTabType(&t) < 0) {
-				t = rv; // default is rev (should not happen)
-			}
-			if (t) {
-				const Rev* r = git->revLookup(sha, t->model());
-				const QString shortLog = r ? r->shortLog() : "";
-				if (shortLog != "") {
-					QSettings settings;
-					QString strRx(settings.value(URL_REGEX_KEY, URL_REGEX_DEF).toString());
-					QRegExp rx(strRx);
-					int pos = rx.indexIn(shortLog, 0);
-					if (pos != -1) {
-						QVariant clink;
-						QString rxl = rx.cap(1);
-						clink.setValue(rxl);
-						ActOpenLink->setData(clink);
-						ActOpenLink->setText("Open " + rxl);
-						contextMenu.addAction(ActOpenLink);
-						ActOpenLink->setEnabled(true);
+		if (sha != ZERO_SHA) {
+			QString local;
+			if (git->gitConfigGet(true, EXTLINK_LOG_LOCAL, local)) {
+				bool isLocal = (local != "false"); // default is local true
+				QString enabled;
+				git->gitConfigGet(isLocal, EXTLINK_LOG_ENABLED, enabled);
+				if (enabled == "true") {
+					Domain* t;
+					if (currentTabType(&t) < 0) {
+						t = rv; // default is rev (should not happen)
+					}
+					if (t) {
+						const Rev* r = git->revLookup(sha, t->model());
+						const QString shortLog = r ? r->shortLog() : "";
+						if (shortLog != "") {
+							QString regex;
+							git->gitConfigGet(isLocal, EXTLINK_LOG_REGEX, regex);
+							QRegExp rx(regex);
+							int pos = rx.indexIn(shortLog, 0);
+							if (pos != -1) {
+								QVariant clink;
+								QString rxl = rx.cap(1);
+								clink.setValue(rxl);
+								ActOpenLinkLog->setData(clink);
+								ActOpenLinkLog->setText("External open " + rxl);
+								contextMenu.addAction(ActOpenLinkLog);
+								ActOpenLinkLog->setEnabled(true);
+							}
+						}
 					}
 				}
+			}
+		}
+	}
+	if (sha != ZERO_SHA) {
+		QString local;
+		if (git->gitConfigGet(true, EXTLINK_COMMIT_LOCAL, local)) {
+			bool isLocal = (local != "false"); // default is local true
+			QString enabled;
+			git->gitConfigGet(isLocal, EXTLINK_COMMIT_ENABLED, enabled);
+			if (enabled == "true") {
+				QVariant clink;
+				clink.setValue(sha);
+				ActOpenLinkCommit->setData(clink);
+				ActOpenLinkCommit->setText("External open " + sha.left(git->shortHashLength()));
+				contextMenu.addAction(ActOpenLinkCommit);
+				ActOpenLinkCommit->setEnabled(true);
 			}
 		}
 	}
@@ -1567,7 +1612,8 @@ void MainImpl::doContexPopup(SCRef sha) {
 	ActExternalEditor->setData(QVariant()); // invalid
 	ActCopyClipboard->setData(QVariant());  // invalid
 	ActCopyHash->setData(QVariant());       // invalid
-	ActOpenLink->setData(QVariant());       // invalid
+	ActOpenLinkLog->setData(QVariant());    // invalid
+	ActOpenLinkCommit->setData(QVariant()); // invalid
 	ActExternalDiff->setData(QVariant());   // invalid
 
 	// restore previous enable property values
@@ -1575,12 +1621,16 @@ void MainImpl::doContexPopup(SCRef sha) {
 		ActCopyClipboard->setEnabled(false);
 	if (!ActExternalEditorWasEnabled && ActExternalEditor->isEnabled())
 		ActExternalEditor->setEnabled(false);
-	if (ActExternalEditorWasEnabled && !ActExternalEditor->isEnabled())
-		ActOpenLink->setText(ActOpenLinkWasText); // restore original text if it was enabled
+	if (ActOpenLinkLogWasEnabled && !ActOpenLinkLog->isEnabled())
+		ActOpenLinkLog->setText(ActOpenLinkLogWasText);      // restore original text if it was enabled
+	if (ActOpenLinkCommitWasEnabled && !ActOpenLinkCommit->isEnabled())
+		ActOpenLinkCommit->setText(ActOpenLinkCommitWasText); // restore original text if it was enabled
 	if (!ActCopyHashWasEnabled && ActCopyHash->isEnabled())
 		ActCopyHash->setEnabled(false);
-	if (!ActOpenLinkWasEnabled && ActOpenLink->isEnabled())
-		ActOpenLink->setEnabled(false);
+	if (!ActOpenLinkLogWasEnabled && ActOpenLinkLog->isEnabled())
+		ActOpenLinkLog->setEnabled(false);
+	if (!ActOpenLinkCommitWasEnabled && ActOpenLinkCommit->isEnabled())
+		ActOpenLinkCommit->setEnabled(false);
 	if (!ActExternalDiffWasEnabled && ActExternalDiff->isEnabled())
 		ActExternalDiff->setEnabled(false);
 }
